@@ -1,101 +1,216 @@
-import Image from "next/image";
+"use client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import React, { useEffect, useState } from "react";
+
+// Define a Task type to store task text and completion status
+interface Task {
+  text: string;
+  isCompleted: boolean;
+  isEditing: boolean; // Track whether the task is being edited
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [newTask, setNewTask] = useState<string>("");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Load tasks from local storage when the component mounts
+  useEffect(() => {
+    const savedTasks = localStorage.getItem("tasks");
+    if (savedTasks) {
+      setTasks(JSON.parse(savedTasks));
+      console.log("Loaded tasks from local storage:", JSON.parse(savedTasks)); // Debug log
+    } else {
+      console.log("No tasks found in local storage."); // Debug log
+    }
+  }, []);
+
+  // Save tasks to local storage whenever tasks change
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+    console.log("Tasks saved to local storage:", tasks); // Debug log
+  }, [tasks]);
+
+  // Add a new task
+  const AddTask = () => {
+    if (newTask.trim()) {
+      const updatedTasks = [
+        ...tasks,
+        { text: newTask, isCompleted: false, isEditing: false },
+      ];
+      setTasks(updatedTasks);
+      setNewTask("");
+      console.log("Added new task:", updatedTasks); // Debug log
+    }
+  };
+
+  // Toggle task completion
+  const toggleComplete = (index: number) => {
+    const updatedTasks = tasks.map((task, i) =>
+      i === index ? { ...task, isCompleted: !task.isCompleted } : task
+    );
+    setTasks(updatedTasks);
+  };
+
+  // Delete a task
+  const deleteTask = (index: number) => {
+    const updatedTasks = tasks.filter((_, i) => i !== index);
+    setTasks(updatedTasks);
+  };
+
+  // Edit a task
+  const editTask = (index: number) => {
+    const updatedTasks = tasks.map((task, i) =>
+      i === index ? { ...task, isEditing: true } : task
+    );
+    setTasks(updatedTasks);
+  };
+
+  // Save the edited task
+  const saveTask = (index: number, newText: string) => {
+    const updatedTasks = tasks.map((task, i) =>
+      i === index ? { ...task, text: newText, isEditing: false } : task
+    );
+    setTasks(updatedTasks);
+  };
+
+  // Separate active and completed tasks
+  const activeTasks = tasks.filter((task) => !task.isCompleted);
+  const completedTasks = tasks.filter((task) => task.isCompleted);
+
+  return (
+    <>
+      {/* Input Section */}
+      <div className="bg-slate-900 grid place-items-center my-5 mx-auto shadow-2xl shadow-slate-700 rounded-2xl max-w-4xl w-full p-8">
+        <div className="p-3 lg:-ml-16 bg-slate-900">
+          <h1 className="lg:text-2xl  text-blue-600 bg-slate-900">
+            ALPHA - Manage Your Tasks At ALPHA
+          </h1>
+          <h2 className="text-xl text-blue-600 bg-slate-900">Add Tasks:</h2>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        <div>
+          <div className="flex flex-col md:flex-row w-full items-center gap-5 bg-slate-900">
+            <Input
+              type="text"
+              placeholder="Enter Your Task"
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              className="rounded-2xl flex-1 lg:w-96 max-w-64 border-blue-700"
+            />
+            <Button
+              onClick={AddTask}
+              className="rounded-full border text-blue-700 border-blue-700 w-20"
+            >
+              Add
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Active Tasks Section */}
+      <div className="bg-slate-900 grid place-items-center my-5 mx-auto rounded-2xl shadow-2xl shadow-slate-700 border border-transparent max-w-4xl w-full p-8">
+        <div className="mt-5 w-full bg-slate-900">
+          <h1 className="bg-slate-900 text-blue-600 -my-10 text-lg text-center border border-transparent rounded-xl p-2">
+            Active Tasks
+          </h1>
+          <hr className="w-32 mx-auto mt-7 " />
+          <ul className="bg-slate-900 mt-5 w-full">
+            {activeTasks.length > 0 ? (
+              activeTasks.map((task, index) => (
+                <li
+                  key={index}
+                  className="lg:p-2 border-b bg-slate-900 border-gray-300 max-w-40 lg:max-w-full flex items-center justify-between"
+                >
+                  {task.isEditing ? (
+                    <div className="flex gap-2 w-full bg-slate-900">
+                        <Input
+                          type="text"
+                          defaultValue={task.text}
+                          onChange={(e) => saveTask(index, e.target.value)}
+                          className="rounded-2xl border-blue-700 flex-1"
+                        />
+                      <Button
+                        onClick={() => saveTask(index, task.text)}
+                        className="rounded-full w-16 border bg-slate-900 border-green-500"
+                      >
+                        Save
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="w-full bg-slate-900">{task.text}</span>
+                      <div className="flex gap-3 bg-slate-900">
+                        <input
+                          type="checkbox"
+                          checked={task.isCompleted}
+                          onChange={() => toggleComplete(index)} // Update task completion
+                          className="ml-4"
+                        />
+                        <Button
+                          onClick={() => editTask(index)}
+                          className="rounded-full border bg-slate-900 text-blue-700 border-blue-700"
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          onClick={() => deleteTask(index)}
+                          className="rounded-full border bg-slate-900 text-red-700 border-red-700"
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </li>
+              ))
+            ) : (
+              <p className="text-gray-500 bg-slate-900 text-center">
+                No active tasks.
+              </p>
+            )}
+          </ul>
+        </div>
+      </div>
+
+      {/* Completed Tasks Section */}
+      <div className="bg-slate-900 grid place-items-center mt-8 mx-auto rounded-2xl shadow-2xl shadow-slate-700 max-w-4xl w-full p-8">
+        <div className="bg-slate-900 mt-5 w-full">
+          <h1 className="bg-slate-900 text-blue-600 -my-10 text-lg text-center border border-transparent rounded-xl p-2">
+            Completed Tasks
+          </h1>
+          <hr className="w-44 mx-auto mt-7" />
+          <ul className="bg-slate-900 mt-5 w-full">
+            {completedTasks.length > 0 ? (
+              completedTasks.map((task, index) => (
+                <li
+                  key={index}
+                  className="p-2 border-b border-gray-300 bg-slate-900 w-full flex items-center justify-between text-gray-500"
+                >
+                  <span className="w-full bg-slate-900 line-through">{task.text}</span>
+                  <div className="flex gap-3 bg-slate-900">
+                    <input
+                      type="checkbox"
+                      checked={task.isCompleted}
+                      onChange={() => toggleComplete(index)} // Update task completion
+                      className="ml-4"
+                    />
+                    <Button
+                      onClick={() => deleteTask(index)}
+                      className="rounded-full border bg-slate-900 text-red-700 border-red-700"
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </li>
+              ))
+            ) : (
+              <p className="text-gray-500 text-center bg-slate-900">
+                No completed tasks yet.
+              </p>
+            )}
+          </ul>
+        </div>
+      </div>
+    </>
   );
 }
